@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    margin: 0; padding: 24px; background: #f5f6f8; color: #1a1a1a;
+  }
+  h1 { font-size: 22px; margin: 0 0 3px 0; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+  .li-logo {
+    display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px;
+    background: #0A66C2; color: #fff; border-radius: 5px; font-weight: 800; font-size: 13px;
+  }
+  h2 { font-size: 14px; margin: 0; color: #333; }
+  .subtitle { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .top-row { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .stat-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill { background: #fff; border: 1px solid #e2e4e8; border-radius: 999px; padding: 5px 12px; font-size: 12px; color: #444; font-weight: 500; }
+  .pill b { color: #111; }
+  .panel {
+    background: #fff; border: 1px solid #e6e8eb; border-radius: 12px;
+    padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 1px 2px rgba(16,24,40,0.04);
+  }
+  .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 4px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: #667085; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.02em; }
+  input[type=text], input[type=number], select {
+    width: 100%; padding: 7px 9px; border: 1px solid #d0d5dd; border-radius: 7px; font-size: 13px;
+    background: #fff; color: #1a1a1a;
+  }
+  input:focus, select:focus { outline: 2px solid #0A66C233; border-color: #0A66C2; }
+  button {
+    padding: 8px 16px; border: none; border-radius: 7px; background: #0A66C2; color: #fff;
+    font-size: 13px; cursor: pointer; font-weight: 600;
+  }
+  button:hover { background: #084d92; }
+  button.secondary { background: #f2f4f7; color: #344054; }
+  button.secondary:hover { background: #e4e7ec; }
+  button.small { padding: 6px 12px; font-size: 12px; }
+  .actions-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { text-align: left; padding: 9px 10px; border-bottom: 2px solid #e6e8eb; color: #667085; font-weight: 600; white-space: nowrap; font-size: 11px; text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer; user-select: none; }
+  th:hover { color: #0A66C2; }
+  th.sorted { color: #0A66C2; }
+  th .arrow { font-size: 10px; margin-left: 3px; }
+  td { padding: 9px 10px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  tr:hover td { background: #fafbfc; }
+  a { color: #0A66C2; text-decoration: none; font-weight: 500; }
+  a:hover { text-decoration: underline; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; white-space: nowrap; }
+  .sig-yes { background: #dcfce7; color: #166534; }
+  .sig-no { background: #fee2e2; color: #991b1b; }
+  .sig-unknown { background: #f3f4f6; color: #6b7280; }
+  .note { font-size: 11.5px; color: #888; margin-top: 10px; line-height: 1.5; }
+  .empty { padding: 24px; text-align: center; color: #888; font-size: 13px; }
+  .timestamp { font-size: 12px; color: #999; font-weight: 400; }
+  .caveat-box {
+    background: #fffaeb; border: 1px solid #fedf89; border-radius: 10px; padding: 13px 16px;
+    font-size: 12px; color: #7a4e00; margin-bottom: 18px; line-height: 1.6;
+  }
+  .caveat-box b { color: #93370d; }
+  .cat-tag { font-size: 10.5px; color: #667085; background: #f2f4f7; padding: 2px 7px; border-radius: 5px; white-space: nowrap; }
+  .results-count { font-size: 12px; color: #667085; margin-bottom: 8px; }
+  .time-cell { color: #475467; white-space: nowrap; }
+  .time-fresh { color: #0A66C2; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="top-row">
+  <div>
+    <h1><span class="li-logo">in</span>Job Search Dashboard</h1>
+    <div class="subtitle">Software Engineer &middot; AI Engineer &middot; Data Engineer &middot; Data Center Technician &middot; Data Scientist &mdash; Remote-first, US, sourced from LinkedIn</div>
+  </div>
+  <div class="stat-pills" id="stat-pills"></div>
+</div>
+
+<div class="caveat-box">
+  <b>Read before relying on this:</b> Each "Apply" link now points to that specific LinkedIn job posting (not a shared search page) &mdash; if one ever looks wrong, it's because LinkedIn removed or replaced that listing since the last refresh, not a dashboard bug.
+  "Sponsorship" only shows Yes/No when a listing explicitly says so &mdash; everything else is honestly "Unknown," never guessed.
+  E-Verify enrollment has <b>no public bulk lookup</b> &mdash; every company shows "not automatable," verify manually at <a href="https://www.e-verify.gov" target="_blank">e-verify.gov</a>.
+  "Added" reflects when this automation captured each listing (LinkedIn doesn't expose exact per-post times without opening every listing individually) &mdash; every row is still pre-filtered to LinkedIn's own "posted in last 24 hours" window.
+  Refreshes once a day to limit automated-access risk to your LinkedIn account.
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Filters <span class="timestamp" id="digest-time"></span></h2>
+    <div class="actions-row" style="margin-top:0;">
+      <button class="secondary small" id="resetFilters">Reset filters</button>
+      <button class="small" id="exportCsv">Download filtered (CSV → opens in Excel)</button>
+    </div>
+  </div>
+
+  <div class="filters-grid">
+    <div class="field">
+      <label>Role category</label>
+      <select id="f-category"><option value="all">All categories</option></select>
+    </div>
+    <div class="field">
+      <label>Location contains</label>
+      <input type="text" id="f-location" placeholder="e.g. Remote, TX, United States">
+    </div>
+    <div class="field">
+      <label>Workplace type</label>
+      <select id="f-workplace"><option value="all">All</option></select>
+    </div>
+    <div class="field">
+      <label>Sponsorship signal</label>
+      <select id="f-sponsor">
+        <option value="all">All</option>
+        <option value="yes">Sponsorship indicated</option>
+        <option value="no">No sponsorship indicated</option>
+        <option value="unknown">Unknown / not stated</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Added within</label>
+      <select id="f-time">
+        <option value="all">Any time</option>
+        <option value="0.5">Last 30 minutes</option>
+        <option value="6">Last 6 hours</option>
+        <option value="24">Last 24 hours</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Min salary (USD/yr)</label>
+      <input type="number" id="f-salary-min" placeholder="e.g. 60000">
+    </div>
+    <div class="field">
+      <label>Max salary (USD/yr)</label>
+      <input type="number" id="f-salary-max" placeholder="e.g. 180000">
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <h2>Today's Digest <span class="timestamp" id="digest-time-2"></span></h2>
+  </div>
+  <div class="results-count" id="results-count"></div>
+  <div id="digest-table"></div>
+  <div class="note">Sorted by "Added" (most recent first) by default — click any column header to re-sort. Refreshed once a day by the scheduled automation. Use "Download filtered" above to export exactly what's shown here.</div>
+</div>
+
+<script>
+const DASHBOARD = {"meta": {"generatedAt": "2026-07-23 20:02", "categories": ["Software Engineer / Full Stack Developer", "AI Engineer", "Data Engineer", "Data Center Technician", "Data Scientist"], "sources": ["LinkedIn"], "notes": {"sponsorship": "sponsorshipSignal is 'yes'/'no' only when explicitly stated; otherwise always 'unknown'.", "everify": "E-Verify enrollment has no public bulk-lookup API - every row is honestly labeled 'not automatable'.", "links": "Each Apply link now points to that specific LinkedIn job posting (captured from the page's own link elements), not a shared search-results URL.", "timestamps": "LinkedIn's job list doesn't expose each posting's exact original post time without opening every listing individually (avoided to limit automated access). 'Added' reflects when this automation fetched it; all jobs are pre-filtered to LinkedIn's own 'posted in last 24 hours' window.", "categoryNote": "AI Engineer and Data Scientist had fewer genuinely-matching, non-duplicate postings today than the other categories - LinkedIn's search overlaps titles across queries heavily; only clearly relevant, non-duplicate roles were kept."}}, "jobs": [{"category": "Software Engineer / Full Stack Developer", "source": "LinkedIn", "title": "Software Engineer", "company": "Microsoft", "location": "United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:57:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4436339189/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Software Engineer / Full Stack Developer", "source": "LinkedIn", "title": "Senior Backend Engineer - Lodging and Cars", "company": "Hopper", "location": "Dallas, TX", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:50:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4435020582/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Software Engineer / Full Stack Developer", "source": "LinkedIn", "title": "Full Stack Software Engineer", "company": "McKesson", "location": "Texas, United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:43:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444472600/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Software Engineer / Full Stack Developer", "source": "LinkedIn", "title": "Sr Engineer - Platform", "company": "The Wendy's Company", "location": "Dublin, OH", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:35:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4426024224/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Software Engineer / Full Stack Developer", "source": "LinkedIn", "title": "Full Stack Engineer | Remote", "company": "Crossing Hurdles", "location": "United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:29:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4435056181/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "AI Engineer", "source": "LinkedIn", "title": "AI Solutions Engineer", "company": "Affirm", "location": "Raleigh, NC", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:54:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4434697972/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "AI Engineer", "source": "LinkedIn", "title": "AI/ML Software Engineer", "company": "FTI Defense - Frontier Technology Inc.", "location": "Chesapeake, VA", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:40:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4427060680/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Engineer", "source": "LinkedIn", "title": "Senior Data Engineer Con II", "company": "Allstate", "location": "United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:56:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444026527/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Engineer", "source": "LinkedIn", "title": "Software Engineer - Python", "company": "ArteraAI", "location": "United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:38:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4414765336/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Engineer", "source": "LinkedIn", "title": "Data Engineer", "company": "CVS Health", "location": "Austin, TX", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:24:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4443813187/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Center Technician", "source": "LinkedIn", "title": "Data Center Technician II", "company": "Cirrascale Cloud Services", "location": "Austin, TX", "workplaceType": "On-site", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:58:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444226553/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Center Technician", "source": "LinkedIn", "title": "Engineering Operation Technician Night Role", "company": "Amazon Web Services (AWS)", "location": "Lubbock, TX", "workplaceType": "On-site", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:47:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444761346/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Center Technician", "source": "LinkedIn", "title": "Data Center FieldOps Technician (RunOps Technician)", "company": "HCLTech", "location": "Huntsville, AL", "workplaceType": "On-site", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:36:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444731948/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Center Technician", "source": "LinkedIn", "title": "Information Technology Technician", "company": "TechSyncSystems", "location": "San Antonio, TX", "workplaceType": "Hybrid", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:22:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444034976/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Center Technician", "source": "LinkedIn", "title": "Data Center Mechanical Engineer", "company": "Google", "location": "Lincoln, NE", "workplaceType": "On-site", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:10:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444024104/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}, {"category": "Data Scientist", "source": "LinkedIn", "title": "Sr Data Scientist", "company": "Amgen", "location": "United States", "workplaceType": "Remote", "employmentType": "Unknown - check listing", "experienceLevel": "Unknown - check listing", "salaryMin": null, "salaryMax": null, "currency": "USD", "fetchedAt": "2026-07-23T19:52:54", "postedWindow": "Last 24h (LinkedIn filter)", "link": "https://www.linkedin.com/jobs/view/4444457646/", "sponsorshipSignal": "unknown", "sponsorshipNote": "Not stated - verify listing", "everifyStatus": "Not automatable - verify at e-verify.gov"}]};
+const JOBS = DASHBOARD.jobs;
+const META = DASHBOARD.meta;
+
+let sortKey = "fetchedAt";
+let sortDir = "desc";
+
+function escapeHtml(s) {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+function fmtSalary(j) {
+  if (j.salaryMin == null && j.salaryMax == null) return "N/A";
+  const cur = j.currency || "USD";
+  const fmt = n => n >= 1000 ? Math.round(n).toLocaleString() : n;
+  if (j.salaryMin != null && j.salaryMax != null && j.salaryMin !== j.salaryMax) return `${fmt(j.salaryMin)}–${fmt(j.salaryMax)} ${cur}`;
+  return `${fmt(j.salaryMin ?? j.salaryMax)} ${cur}`;
+}
+
+function relativeTime(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  const mins = Math.round((Date.now() - d.getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.round(hrs / 24);
+  return `${days}d ago`;
+}
+
+function sponsorBadge(sig) {
+  const map = {yes: ["sig-yes","Sponsorship indicated"], no: ["sig-no","No sponsorship"], unknown: ["sig-unknown","Unknown"]};
+  const [cls, label] = map[sig] || map.unknown;
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function populateSelect(id, values) {
+  const el = document.getElementById(id);
+  for (const v of values) {
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v;
+    el.appendChild(opt);
+  }
+}
+
+populateSelect("f-category", META.categories);
+populateSelect("f-workplace", [...new Set(JOBS.map(j => j.workplaceType))].sort());
+
+const FILTER_IDS = ["f-category","f-location","f-workplace","f-sponsor","f-time","f-salary-min","f-salary-max"];
+
+function loadSavedState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("jobDashboardFilters") || "{}");
+    for (const id of FILTER_IDS) {
+      if (saved[id] !== undefined && document.getElementById(id)) document.getElementById(id).value = saved[id];
+    }
+    if (saved.sortKey) sortKey = saved.sortKey;
+    if (saved.sortDir) sortDir = saved.sortDir;
+  } catch (e) {}
+}
+function saveState() {
+  const state = {sortKey, sortDir};
+  for (const id of FILTER_IDS) state[id] = document.getElementById(id).value;
+  localStorage.setItem("jobDashboardFilters", JSON.stringify(state));
+}
+
+function getFiltered() {
+  const cat = document.getElementById("f-category").value;
+  const loc = document.getElementById("f-location").value.trim().toLowerCase();
+  const wp = document.getElementById("f-workplace").value;
+  const spon = document.getElementById("f-sponsor").value;
+  const within = document.getElementById("f-time").value;
+  const salMin = parseFloat(document.getElementById("f-salary-min").value);
+  const salMax = parseFloat(document.getElementById("f-salary-max").value);
+
+  let rows = JOBS.filter(j => {
+    if (cat !== "all" && j.category !== cat) return false;
+    if (loc && !(j.location || "").toLowerCase().includes(loc)) return false;
+    if (wp !== "all" && j.workplaceType !== wp) return false;
+    if (spon !== "all" && j.sponsorshipSignal !== spon) return false;
+    if (within !== "all") {
+      const hrs = (Date.now() - new Date(j.fetchedAt).getTime()) / 3600000;
+      if (hrs > parseFloat(within)) return false;
+    }
+    if (!isNaN(salMin)) {
+      if (j.salaryMin == null && j.salaryMax == null) return false;
+      if ((j.salaryMax ?? j.salaryMin) < salMin) return false;
+    }
+    if (!isNaN(salMax)) {
+      if (j.salaryMin != null && j.salaryMin > salMax) return false;
+    }
+    return true;
+  });
+
+  rows.sort((a, b) => {
+    let av = a[sortKey], bv = b[sortKey];
+    if (sortKey === "salaryMin" || sortKey === "salaryMax") {
+      av = av ?? -Infinity; bv = bv ?? -Infinity;
+    } else {
+      av = (av ?? "").toString().toLowerCase(); bv = (bv ?? "").toString().toLowerCase();
+    }
+    if (av < bv) return sortDir === "asc" ? -1 : 1;
+    if (av > bv) return sortDir === "asc" ? 1 : -1;
+    return 0;
+  });
+  return rows;
+}
+
+function renderStats() {
+  const el = document.getElementById("stat-pills");
+  const byCat = {};
+  for (const j of JOBS) byCat[j.category] = (byCat[j.category] || 0) + 1;
+  let html = `<span class="pill"><b>${JOBS.length}</b> total roles</span>`;
+  for (const c of META.categories) html += `<span class="pill">${c.split(" / ")[0]}: <b>${byCat[c] || 0}</b></span>`;
+  el.innerHTML = html;
+}
+
+const COLS = [
+  {key: "category", label: "Category"},
+  {key: "title", label: "Title"},
+  {key: "company", label: "Company"},
+  {key: "location", label: "Location"},
+  {key: "salaryMax", label: "Salary"},
+  {key: "fetchedAt", label: "Added"},
+  {key: "sponsorshipSignal", label: "Sponsorship"},
+  {key: "link", label: "Apply", noSort: true},
+];
+
+function renderDigest() {
+  const rows = getFiltered();
+  document.getElementById("results-count").textContent = `Showing ${rows.length} of ${JOBS.length} roles, sorted by ${COLS.find(c=>c.key===sortKey)?.label || sortKey} (${sortDir === "desc" ? "newest/highest first" : "oldest/lowest first"})`;
+  const el = document.getElementById("digest-table");
+  if (rows.length === 0) {
+    el.innerHTML = `<div class="empty">No jobs match this filter combination. Try loosening a filter.</div>`;
+    return;
+  }
+  let html = `<table><thead><tr>`;
+  for (const col of COLS) {
+    const isSorted = col.key === sortKey;
+    const arrow = isSorted ? (sortDir === "desc" ? "↓" : "↑") : "";
+    html += `<th data-key="${col.key}" class="${isSorted ? 'sorted' : ''}">${col.label}${col.noSort ? '' : `<span class="arrow">${arrow}</span>`}</th>`;
+  }
+  html += `</tr></thead><tbody>`;
+  for (const j of rows) {
+    const fresh = (Date.now() - new Date(j.fetchedAt).getTime()) < 3600000;
+    html += `<tr>
+      <td><span class="cat-tag">${escapeHtml(j.category)}</span></td>
+      <td>${escapeHtml(j.title)}</td>
+      <td>${escapeHtml(j.company)}</td>
+      <td>${escapeHtml(j.location)} <span style="color:#98a2b3;font-size:11px;">(${escapeHtml(j.workplaceType)})</span></td>
+      <td>${escapeHtml(fmtSalary(j))}</td>
+      <td class="time-cell ${fresh ? 'time-fresh' : ''}">${escapeHtml(relativeTime(j.fetchedAt))}</td>
+      <td>${sponsorBadge(j.sponsorshipSignal)}</td>
+      <td><a href="${escapeHtml(j.link)}" target="_blank">Open ↗</a></td>
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  el.innerHTML = html;
+
+  el.querySelectorAll("th[data-key]").forEach(th => {
+    th.addEventListener("click", () => {
+      const key = th.getAttribute("data-key");
+      if (key === sortKey) { sortDir = sortDir === "desc" ? "asc" : "desc"; }
+      else { sortKey = key; sortDir = "desc"; }
+      saveState();
+      renderDigest();
+    });
+  });
+}
+
+function exportCsv() {
+  const rows = getFiltered();
+  const headers = ["Category","Title","Company","Location","Workplace","Salary Min","Salary Max","Currency","Added","Sponsorship Signal","Sponsorship Note","E-Verify Status","Link"];
+  const csvRows = [headers.join(",")];
+  for (const j of rows) {
+    const line = [j.category, j.title, j.company, j.location, j.workplaceType, j.salaryMin ?? "", j.salaryMax ?? "",
+      j.currency, j.fetchedAt, j.sponsorshipSignal, j.sponsorshipNote, j.everifyStatus, j.link]
+      .map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",");
+    csvRows.push(line);
+  }
+  const blob = new Blob([csvRows.join("\n")], {type: "text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `linkedin_job_dashboard_filtered_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function refreshAll() {
+  saveState();
+  renderDigest();
+}
+
+for (const id of FILTER_IDS) {
+  document.getElementById(id).addEventListener("input", refreshAll);
+  document.getElementById(id).addEventListener("change", refreshAll);
+}
+document.getElementById("resetFilters").addEventListener("click", () => {
+  for (const id of FILTER_IDS) document.getElementById(id).value = document.getElementById(id).options ? document.getElementById(id).options[0].value : "";
+  sortKey = "fetchedAt"; sortDir = "desc";
+  refreshAll();
+});
+document.getElementById("exportCsv").addEventListener("click", exportCsv);
+
+document.getElementById("digest-time").textContent = META.generatedAt ? `— last updated ${META.generatedAt}` : "";
+document.getElementById("digest-time-2").textContent = META.generatedAt ? `— last updated ${META.generatedAt}` : "";
+
+loadSavedState();
+renderStats();
+renderDigest();
+</script>
+</body>
+</html>
